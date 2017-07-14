@@ -321,52 +321,53 @@ class FocusSquare: SCNNode {
 		    -   -
 		    s7  s8
 		*/
-		let sl: Float = 0.5  // segment length
-		let st = focusSquareThickness
-		let c: Float = focusSquareThickness / 2  // correction to align lines perfectly
+        let sl: Float = 0.5  // segment length
+        let st = focusSquareThickness
+        let c: Float = focusSquareThickness / 2 // correction to align lines perfectly
+        
 		
-		let s1 = FocusSquareSegment(name: "s1", width: sl, thickness: st, color: focusSquareColor)
-		let s2 = FocusSquareSegment(name: "s2", width: sl, thickness: st, color: focusSquareColor)
-		let s3 = FocusSquareSegment(name: "s3", width: sl, thickness: st, color: focusSquareColor, vertical: true)
-		let s4 = FocusSquareSegment(name: "s4", width: sl, thickness: st, color: focusSquareColor, vertical: true)
-		let s5 = FocusSquareSegment(name: "s5", width: sl, thickness: st, color: focusSquareColor, vertical: true)
-		let s6 = FocusSquareSegment(name: "s6", width: sl, thickness: st, color: focusSquareColor, vertical: true)
-		let s7 = FocusSquareSegment(name: "s7", width: sl, thickness: st, color: focusSquareColor)
-		let s8 = FocusSquareSegment(name: "s8", width: sl, thickness: st, color: focusSquareColor)
-		s1.position += SCNVector3Make(-(sl / 2 - c), -(sl - c), 0)
-		s2.position += SCNVector3Make(sl / 2 - c, -(sl - c), 0)
-		s3.position += SCNVector3Make(-sl, -sl / 2, 0)
-		s4.position += SCNVector3Make(sl, -sl / 2, 0)
-		s5.position += SCNVector3Make(-sl, sl / 2, 0)
-		s6.position += SCNVector3Make(sl, sl / 2, 0)
-		s7.position += SCNVector3Make(-(sl / 2 - c), sl - c, 0)
-		s8.position += SCNVector3Make(sl / 2 - c, sl - c, 0)
-		
-		let fillPlane = SCNPlane(width: CGFloat(1.0 - st * 2 + c), height: CGFloat(1.0 - st * 2 + c))
-		let material = SCNMaterial.material(withDiffuse: focusSquareColorLight, respondsToLighting: false)
-		fillPlane.materials = [material]
-		let fillPlaneNode = SCNNode(geometry: fillPlane)
-		fillPlaneNode.name = "fillPlane"
-		fillPlaneNode.opacity = 0.0
-		
-		let planeNode = SCNNode()
-		planeNode.eulerAngles = SCNVector3Make(Float.pi / 2.0, 0, 0) // Horizontal
-		planeNode.setUniformScale(focusSquareSize * scaleForClosedSquare)
-		planeNode.addChildNode(s1)
-		planeNode.addChildNode(s2)
-		planeNode.addChildNode(s3)
-		planeNode.addChildNode(s4)
-		planeNode.addChildNode(s5)
-		planeNode.addChildNode(s6)
-		planeNode.addChildNode(s7)
-		planeNode.addChildNode(s8)
-		planeNode.addChildNode(fillPlaneNode)
-		
-		isOpen = false
-		
-		// Always render focus square on top
-		planeNode.renderOnTop()
-		
+        let s1 = FocusSquareSegment(name: "s1", width: sl, thickness: st, color: focusSquareColor)
+        let s2 = FocusSquareSegment(name: "s2", width: sl, thickness: st, color: focusSquareColor)
+        let s3 = FocusSquareSegment(name: "s3", width: sl, thickness: st, color: focusSquareColor, vertical: true)
+        let s4 = FocusSquareSegment(name: "s4", width: sl, thickness: st, color: focusSquareColor, vertical: true)
+        let s5 = FocusSquareSegment(name: "s5", width: sl, thickness: st, color: focusSquareColor, vertical: true)
+        let s6 = FocusSquareSegment(name: "s6", width: sl, thickness: st, color: focusSquareColor, vertical: true)
+        let s7 = FocusSquareSegment(name: "s7", width: sl, thickness: st, color: focusSquareColor)
+        let s8 = FocusSquareSegment(name: "s8", width: sl, thickness: st, color: focusSquareColor)
+        s1.position += SCNVector3Make(-(sl / 2 - c), -(sl - c), 0)
+        s2.position += SCNVector3Make(sl / 2 - c, -(sl - c), 0)
+        s3.position += SCNVector3Make(-sl, -sl / 2, 0)
+        s4.position += SCNVector3Make(sl, -sl / 2, 0)
+        s5.position += SCNVector3Make(-sl, sl / 2, 0)
+        s6.position += SCNVector3Make(sl, sl / 2, 0)
+        s7.position += SCNVector3Make(-(sl / 2 - c), sl - c, 0)
+        s8.position += SCNVector3Make(sl / 2 - c, sl - c, 0)
+        
+        let fillPlane = SCNPlane(width: CGFloat(1.0 - st * 2 + c), height: CGFloat(1.0 - st * 2 + c))
+        let material = SCNMaterial.material(withDiffuse: focusSquareColorLight, respondsToLighting: false)
+        fillPlane.materials = [material]
+        let fillPlaneNode = SCNNode(geometry: fillPlane)
+        fillPlaneNode.name = "fillPlane"
+        fillPlaneNode.opacity = 0.0
+        
+        let planeNode = SCNNode()
+        planeNode.eulerAngles = SCNVector3Make(Float.pi / 2.0, 0, 0) // Horizontal
+        planeNode.setUniformScale(focusSquareSize * scaleForClosedSquare)
+        planeNode.addChildNode(s1)
+        planeNode.addChildNode(s2)
+        planeNode.addChildNode(s3)
+        planeNode.addChildNode(s4)
+        planeNode.addChildNode(s5)
+        planeNode.addChildNode(s6)
+        planeNode.addChildNode(s7)
+        planeNode.addChildNode(s8)
+        planeNode.addChildNode(fillPlaneNode)
+        
+        isOpen = false
+        
+        // Always render focus square on top
+        planeNode.renderOnTop()
+        
 		return planeNode
 	}
 }
@@ -391,9 +392,9 @@ class FocusSquareSegment: SCNNode {
 		} else {
 			plane = SCNPlane(width: CGFloat(width), height: CGFloat(thickness))
 		}
-        plane.materials = [material]
-        self.geometry = plane
-        self.name = name
+		plane.materials = [material]
+		self.geometry = plane
+		self.name = name
 	}
 	
 	required init?(coder aDecoder: NSCoder) {

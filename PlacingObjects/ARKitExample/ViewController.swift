@@ -16,26 +16,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
     // MARK: - Main Setup & View Controller methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // 设置参数初始化，回复默认值
+
         Setting.registerDefaults()
-        
-        //
         setupScene()
-        
-        //
         setupDebug()
-        
-        //
         setupUIControls()
-        
-        //
 		setupFocusSquare()
-        
-        //
 		updateSettings()
-        
-        //
 		resetVirtualObject()
     }
 
@@ -57,6 +44,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
     // MARK: - ARKit / ARSCNView
     let session = ARSession()
 	var sessionConfig: ARSessionConfiguration = ARWorldTrackingSessionConfiguration()
+    
+    ///
 	var use3DOFTracking = false {
 		didSet {
 			if use3DOFTracking {
@@ -70,8 +59,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
     @IBOutlet var sceneView: ARSCNView!
 	var screenCenter: CGPoint?
     
+    
+    /// set up sceneView
     func setupScene() {
-        // set up sceneView
         sceneView.delegate = self
         sceneView.session = session
 		sceneView.antialiasingMode = .multisampling4X
@@ -94,7 +84,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
 			camera.minimumExposure = -1
 		}
     }
-	
+    
+    
+    /// 加载背景光影
+    ///
+    /// - Parameter intensity: 光影值
 	func enableEnvironmentMapWithIntensity(_ intensity: CGFloat) {
 		if sceneView.scene.lightingEnvironment.contents == nil {
 			if let environmentMap = UIImage(named: "Models.scnassets/sharedImages/environment_blur.exr") {
@@ -105,7 +99,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
 	}
 	
     // MARK: - ARSCNViewDelegate
-	
+    
 	func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
 		refreshFeaturePoints()
 		
@@ -149,7 +143,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
     }
 	
 	var trackingFallbackTimer: Timer?
-
+    
+    
+    
+    /// 相机改变追踪状态
 	func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
         textManager.showTrackingQualityInfo(for: camera.trackingState, autoHide: !self.showDebugVisuals)
 
@@ -198,11 +195,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
 		displayErrorMessage(title: "We're sorry!", message: sessionErrorMsg, allowRestart: isRecoverable)
 	}
 	
+    ///  session意外断开（如果开启ARSession之后，APP退到后台就有可能导致会话断开）
+    ///
 	func sessionWasInterrupted(_ session: ARSession) {
 		textManager.blurBackground()
 		textManager.showAlert(title: "Session Interrupted", message: "The session will be reset after the interruption has ended.")
 	}
 		
+    /// session会话断开恢复（短时间退到后台再进入APP会自动恢复）
 	func sessionInterruptionEnded(_ session: ARSession) {
 		textManager.unblurBackground()
 		session.run(sessionConfig, options: [.resetTracking, .removeExistingAnchors])
@@ -212,6 +212,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
 	
     // MARK: - Ambient Light Estimation
 	
+    /// 开关灯光
+    ///
+    /// - Parameter enabled:
 	func toggleAmbientLightEstimation(_ enabled: Bool) {
 		
         if enabled {
@@ -231,48 +234,49 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
 
     // MARK: - Gesture Recognizers
 	
-	var currentGesture: Gesture?
-	
-	override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-		guard let object = virtualObject else {
-			return
-		}
-		
-		if currentGesture == nil {
-			currentGesture = Gesture.startGestureFromTouches(touches, self.sceneView, object)
-		} else {
-			currentGesture = currentGesture!.updateGestureFromTouches(touches, .touchBegan)
-		}
-		
-		displayVirtualObjectTransform()
-	}
-	
-	override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-		if virtualObject == nil {
-			return
-		}
-		currentGesture = currentGesture?.updateGestureFromTouches(touches, .touchMoved)
-		displayVirtualObjectTransform()
-	}
-	
-	override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-		if virtualObject == nil {
-			chooseObject(addObjectButton)
-			return
-		}
-		
-		currentGesture = currentGesture?.updateGestureFromTouches(touches, .touchEnded)
-	}
-	
-	override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-		if virtualObject == nil {
-			return
-		}
-		currentGesture = currentGesture?.updateGestureFromTouches(touches, .touchCancelled)
-	}
-	
+    var currentGesture: Gesture?
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let object = virtualObject else {
+            return
+        }
+        
+        if currentGesture == nil {
+            currentGesture = Gesture.startGestureFromTouches(touches, self.sceneView, object)
+        } else {
+            currentGesture = currentGesture!.updateGestureFromTouches(touches, .touchBegan)
+        }
+        
+        displayVirtualObjectTransform()
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if virtualObject == nil {
+            return
+        }
+        currentGesture = currentGesture?.updateGestureFromTouches(touches, .touchMoved)
+        displayVirtualObjectTransform()
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if virtualObject == nil {
+            chooseObject(addObjectButton)
+            return
+        }
+        
+        currentGesture = currentGesture?.updateGestureFromTouches(touches, .touchEnded)
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if virtualObject == nil {
+            return
+        }
+        currentGesture = currentGesture?.updateGestureFromTouches(touches, .touchCancelled)
+    }
+    
 	// MARK: - Virtual Object Manipulation
 	
+    /// 
 	func displayVirtualObjectTransform() {
 		
 		guard let object = virtualObject, let cameraTransform = session.currentFrame?.camera.transform else {
@@ -654,6 +658,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIPopoverPresentation
 			focusSquare?.unhide()
 		}
 		let (worldPos, planeAnchor, _) = worldPositionFromScreenPosition(screenCenter, objectPos: focusSquare?.position)
+        
 		if let worldPos = worldPos {
 			focusSquare?.update(for: worldPos, planeAnchor: planeAnchor, camera: self.session.currentFrame?.camera)
 			textManager.cancelScheduledMessage(forType: .focusSquare)

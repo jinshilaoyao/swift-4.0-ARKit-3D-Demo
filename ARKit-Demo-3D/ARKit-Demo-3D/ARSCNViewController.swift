@@ -13,12 +13,15 @@ import ARKit
 
 class ARSCNViewController: UIViewController {
     
+    private var screenCenter: CGPoint?
+    
     private lazy var arSCNView: ARSCNView = {
         let scnView = ARSCNView()
         scnView.session = self.arSession
         scnView.automaticallyUpdatesLighting = true
         scnView.showsStatistics = true
         scnView.translatesAutoresizingMaskIntoConstraints = false
+        
         return scnView
     }()
     
@@ -39,6 +42,12 @@ class ARSCNViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(arSCNView)
+        
+        creatFocusSquarePlane()
+        
+        DispatchQueue.main.async {
+            self.screenCenter = self.arSCNView.bounds.mid
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -58,9 +67,6 @@ class ARSCNViewController: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidAppear(animated)
         arSession.delegate = nil
-//        arSCNView.delegate = nil
-        
-        
     }
 //    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
 //        let shipScene = SCNScene(named: "Models.scnassets/candle/candle.scn")
@@ -75,14 +81,68 @@ class ARSCNViewController: UIViewController {
 //        cupNode?.position = SCNVector3Make(0, -0.2, -0.3)
 //        arSCNView.scene.rootNode.addChildNode(cupNode!)
 //    }
-    private func creatFocusSquarePlane() -> SCNNode? {
+    private func creatFocusSquarePlane() {
         if planeNode == nil {
             let plane = SCNBox(width: 0.3, height: 0, length: 0.3, chamferRadius: 0)
             plane.firstMaterial?.diffuse.contents = UIColor.red
             planeNode = SCNNode(geometry: plane)
-            planeNode?.position = SCNVector3Make(0, 0, 0)
+            planeNode?.position = SCNVector3Make(0, -0.2, -0.5)
+            planeNode?.isHidden = true
+            arSCNView.scene.rootNode.addChildNode(planeNode!)
         }
-        return planeNode
+    }
+    
+    private func updatePlaneNode() {
+        
+//        guard let screenCenter = screenCenter else {
+//            return
+//        }
+//        if arSCNView.isNode(planeNode!, insideFrustumOf: arSCNView.pointOfView!) {
+//
+//        }
+//
+//        let (worldPos, planeAnchor, _) = worldPositionFromScreenPosition(screenCenter, objectPos: planeNode?.position)
+//
+//        if let worldPos = worldPos {
+//            planeNode?.update(for: worldPos, planeAnchor: planeAnchor, camera: self.session.currentFrame?.camera)
+//        }
+        
+    }
+    
+    func worldPositionFromScreenPosition(_ position: CGPoint,
+                                         objectPos: SCNVector3?,
+                                         infinitePlane: Bool = false) -> (position: SCNVector3?, planeAnchor: ARPlaneAnchor?, hitAPlane: Bool) {
+        
+        let planeHitTestResults = arSCNView.hitTest(position, types: .existingPlaneUsingExtent)
+        if let result = planeHitTestResults.first {
+            
+            
+            let planeAnchor = result.anchor
+            return (SCNVector3(), planeAnchor as? ARPlaneAnchor, true)
+        }
+        
+        var featureHitTestPostion: SCNVector3?
+        var highQualityFeatureHitTestResult = false
+        
+        let highQualityfeatureHitTestResults = arSCNView.hitTestWithFeatures(position, coneOpeningAngleInDegrees: 18, minDistance: 0.2, maxDistance: 2.0)
+        
+        if highQualityfeatureHitTestResults.isEmpty {
+            let result = highQualityfeatureHitTestResults[0]
+            featureHitTestPostion = result.position
+            highQualityFeatureHitTestResult = true
+        }
+        
+        if infinitePlane || !highQualityFeatureHitTestResult {
+            let pointOnPlane = objectPos ?? SCNVector3Zero
+            
+            let pointOninfinitePlane = arSCNView.hitTestWithInfiniteHorizontalPlane(position, pointOnPlane)
+            
+            if pointOninfinitePlane != nil {
+                return (pointOninfinitePlane, nil, true)
+            }
+        }
+//
+        return (nil, nil, false)
     }
     
     deinit {
@@ -92,13 +152,7 @@ class ARSCNViewController: UIViewController {
 extension ARSCNViewController: ARSCNViewDelegate {
     
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
-//        let node = renderer.scene?.rootNode
-//        guard let planeNode = creatFocusSquarePlane() else {
-//            return
-//        }
-//        print(node?.childNodes.count ?? 0)
-//        node?.addChildNode(planeNode)
-        
+        updatePlaneNode()
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -122,5 +176,7 @@ extension ARSCNViewController: ARSCNViewDelegate {
 extension ARSCNViewController: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
 //        print("相机移动")
+        
+        print("\(frame.camera.trackingState)")
     }
 }
